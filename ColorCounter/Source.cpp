@@ -31,9 +31,9 @@ struct color {
 	}
 };
 
-bool readColorFile(multimap<int, color>& colors);
+bool readColorFile(multimap<int, color>& colors, string colorFileName);
 bool checkDuplicate(multimap<int, color>& colors, color newColor);
-bool readBitmap(multimap<int, color>& colors);
+bool readBitmap(multimap<int, color>& colors, string bmpFileName);
 void searchPixelColor(multimap<int, color>& colors, pixel currentPixel);
 void printUsedColors(multimap<int, color>& colors);
 
@@ -48,10 +48,19 @@ int main() {
 	BOOL gotTime1, gotTime2;
 	DWORD failReason;
 	ULONGLONG  u1, u2;
+	string colorFile;
+	string bmpFile;
+
+	cout << "Enter the path to your color file: ";
+	cin >> colorFile;
+
+	cout << "Enter the path to your bitmap file: ";
+	cin >> bmpFile;
+
 
 	//read color file, exit if something goes wrong
-	if (!readColorFile(colors)) {
-		return 0;
+	if (!readColorFile(colors, colorFile)) {
+		return 1;
 	}
 
 	//initialize CPU time
@@ -68,8 +77,8 @@ int main() {
 	double fStartTime = loct.wHour * 3600 + loct.wMinute * 60 + loct.wSecond + (loct.wMilliseconds / 1000.0);
 
 	//read the bitmap file, exit if something goes wrong
-	if (!readBitmap(colors)) {
-		return 0;
+	if (!readBitmap(colors, bmpFile)) {
+		return 1;
 	}
 
 	//get CPU time elapsed
@@ -103,13 +112,9 @@ ULONGLONG getTime64(LPFILETIME a) {
 	return work.QuadPart;
 }
 
-bool readColorFile(multimap<int, color>& colors) {
+bool readColorFile(multimap<int, color>& colors, string colorFileName) {
 
-	string fileName;
-	cout << "Enter the path to your color file: ";
-	cin >> fileName;
-
-	ifstream infile(fileName);
+	ifstream infile(colorFileName);
 
 	if (!infile) {
 		cout << "Unable to open file, terminating program . . .\n";
@@ -134,7 +139,6 @@ bool readColorFile(multimap<int, color>& colors) {
 			cout << "(" << red << ", " << green << ", " << blue << ") - " << colorName << " is not a valid color, ignoring this data\n";
 		}
 		else if (!checkDuplicate(colors, color(red, green, blue, colorName))) {
-			//MAYBE CHANGE THISSSSS
 			colors.insert(make_pair(red + green + blue, color(red, green, blue, colorName)));
 		}
 
@@ -157,12 +161,8 @@ bool checkDuplicate(multimap<int, color>& colors, color newColor) {
 	return false;
 }
 
-bool readBitmap(multimap<int, color>& colors) {
-	/*
-	* REMEMBER TO CHANGE THIS
-	* IT IS SET TP UNTITLED, NEEDS TO BE SET TO SOMETHING ELSE
-	*/
-	ifstream bmpfile("C:/Temp/Untitled.bmp", ios::in | ios::binary);
+bool readBitmap(multimap<int, color>& colors, string bmpFileName) {
+	ifstream bmpfile(bmpFileName, ios::in | ios::binary);
 
 	if (!bmpfile) {
 		cout << "Bitmap file couldn't be opened, data cannot be read . . .\n";
@@ -205,6 +205,8 @@ bool readBitmap(multimap<int, color>& colors) {
 
 		bmpfile.ignore(paddingAmount);
 	}
+
+	return true;
 }
 
 void searchPixelColor(multimap<int, color>& colors, pixel currentPixel) {
